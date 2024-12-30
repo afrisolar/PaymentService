@@ -38,7 +38,7 @@ class PaymentServiceImplTest {
                 .paymentId(1L)
                 .product("ProductA")
                 .quantity(2)
-                .paymentMethod("CreditCard")
+                .cardNumber(123456L)
                 .currency("USD")
                 .customer("Customer1")
                 .build();
@@ -46,7 +46,7 @@ class PaymentServiceImplTest {
         sampleRequestDto = PaymentRequestDto.builder()
                 .product("ProductA")
                 .quantity(2)
-                .paymentMethod("CreditCard")
+                .cardNumber(123456L)
                 .currency("USD")
                 .customer("Customer1")
                 .build();
@@ -73,7 +73,7 @@ class PaymentServiceImplTest {
         Mono<PaymentResponseDto> result = paymentService.updatePayment(sampleRequestDto, 1, "req-123");
 
         StepVerifier.create(result)
-                .expectNextMatches(response -> response.getPaymentMethod().equals("CreditCard"))
+                .expectNextMatches(response -> response.getCardNumber().equals(123456L))
                 .verifyComplete();
 
         verify(paymentRepository, times(1)).findById(1L);

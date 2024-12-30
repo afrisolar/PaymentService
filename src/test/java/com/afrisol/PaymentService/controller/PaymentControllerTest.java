@@ -46,7 +46,7 @@ class PaymentControllerTest {
                 .product("ProductA")
                 .quantity(2)
                 .totalAmount(BigDecimal.valueOf(200))
-                .paymentMethod("CreditCard")
+                .cardNumber(123456789L)
                 .currency("USD")
                 .customer("Customer1")
                 .build();
@@ -55,7 +55,7 @@ class PaymentControllerTest {
         samplePaymentRequest = PaymentRequestDto.builder()
                 .product("ProductA")
                 .quantity(2)
-                .paymentMethod("CreditCard")
+                .cardNumber(123456789L)
                 .currency("USD")
                 .customer("Customer1")
                 .build();

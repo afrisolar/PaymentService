@@ -16,8 +16,7 @@ public class PaymentResponseDto {
     private String product;
     private Integer quantity;
     private BigDecimal totalAmount;
-    private String paymentMethod;
+    private Long cardNumber;
     private String currency;
     private String customer;
 }
-

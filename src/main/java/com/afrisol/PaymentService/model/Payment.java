@@ -19,19 +19,19 @@ public class Payment {
     private Long paymentId;
     private String product; // Product represented as a simple string
     private Integer quantity;
-    private String paymentMethod;
+    private Long cardNumber; // Card number as a numeric type
     private String currency; // e.g., USD, EUR
     private String customer; // Customer represented as a simple string (e.g., name)
 
-    public Payment(String product, int quantity, BigDecimal unitPrice, String paymentMethod, String currency, String customer) {
+    public Payment(String product, int quantity, BigDecimal unitPrice, Long cardNumber, String currency, String customer) {
         this.product = product;
         this.quantity = quantity;
-        this.paymentMethod = paymentMethod;
+        this.cardNumber = cardNumber;
         this.currency = currency;
+        this.customer = customer;
     }
 
     public void processPayment() {
         BigDecimal totalAmount = BigDecimal.valueOf(quantity * 10L);
     }
 }
-

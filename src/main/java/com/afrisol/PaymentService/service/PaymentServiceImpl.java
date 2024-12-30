@@ -45,7 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
                     // Update payment fields
                     existingPayment.setProduct(paymentRequestDto.getProduct());
                     existingPayment.setQuantity(paymentRequestDto.getQuantity());
-                    existingPayment.setPaymentMethod(paymentRequestDto.getPaymentMethod());
+                    existingPayment.setCardNumber(paymentRequestDto.getCardNumber());
                     existingPayment.setCurrency(paymentRequestDto.getCurrency());
                     existingPayment.setCustomer(paymentRequestDto.getCustomer());
                     return paymentRepository.save(existingPayment);
@@ -92,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
         return Payment.builder()
                 .product(dto.getProduct())
                 .quantity(dto.getQuantity())
-                .paymentMethod(dto.getPaymentMethod())
+                .cardNumber(dto.getCardNumber())
                 .currency(dto.getCurrency())
                 .customer(dto.getCustomer())
                 .build();
@@ -103,7 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
                 .paymentId(payment.getPaymentId())
                 .product(payment.getProduct())
                 .quantity(payment.getQuantity())
-                .paymentMethod(payment.getPaymentMethod())
+                .cardNumber(payment.getCardNumber())
                 .currency(payment.getCurrency())
                 .customer(payment.getCustomer())
                 .build();
