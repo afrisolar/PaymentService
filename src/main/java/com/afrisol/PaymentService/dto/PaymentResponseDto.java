@@ -18,5 +18,5 @@ public class PaymentResponseDto {
     private BigDecimal totalAmount;
     private Long cardNumber;
     private String currency;
-    private String customer;
+    private Integer customerId;
 }

@@ -5,9 +5,14 @@ import com.afrisol.PaymentService.dto.PaymentResponseDto;
 import com.afrisol.PaymentService.exception.PaymentNotFoundException;
 import com.afrisol.PaymentService.model.Payment;
 import com.afrisol.PaymentService.repository.PaymentRepository;
+import com.afrisol.PaymentService.util.PaymentMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,22 +22,38 @@ import reactor.core.publisher.Mono;
 public class PaymentServiceImpl implements PaymentService {
 
     private final PaymentRepository paymentRepository;
+    @Value("${topics.payment}")
+    private String paymentsTopic;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
-    @Autowired
-    public PaymentServiceImpl(PaymentRepository paymentRepository) {
+    public PaymentServiceImpl(PaymentRepository paymentRepository, KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         this.paymentRepository = paymentRepository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 
     @Override
-    public Mono<PaymentResponseDto> addPayment(PaymentRequestDto paymentRequestDto, String requestID) {
-        if (paymentRequestDto == null) {
-            return Mono.error(new IllegalArgumentException("PaymentRequestDto cannot be null"));
+    public Mono<PaymentResponseDto> processPayment(PaymentRequestDto paymentRequestDto) {
+        log.info("Processing payment for Order: {}", paymentRequestDto);
+        return paymentRepository.save(PaymentMapper.mapToPaymentEntity(paymentRequestDto))
+                .doOnNext(savedPayment -> {
+                    // Publish a message of successful payment
+                    publishPaymentMessage(paymentRequestDto);
+                    log.info("Successfully processed payment with ID: {} for request ID: {}",
+                            savedPayment.getPaymentId(), paymentRequestDto);
+                })
+                .map(PaymentMapper::mapToPaymentResponseDto);
+    }
+
+    private void publishPaymentMessage(PaymentRequestDto paymentRequest) {
+        try {
+            String paymentMessage = objectMapper.writeValueAsString(paymentRequest);
+            kafkaTemplate.send(paymentsTopic, paymentMessage); // Use the standalone topic name
+            log.info("Published payment message to topic '{}': {}", paymentsTopic, paymentMessage);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to publish payment message: {}", paymentRequest, e);
         }
-        return paymentRepository.save(mapToPaymentEntity(paymentRequestDto))
-                .doOnNext(savedPayment ->
-                        log.info("Successfully added payment with ID: {} for request ID: {}", savedPayment.getPaymentId(), requestID)
-                )
-                .map(this::mapToPaymentResponseDto);
     }
 
     @Override
@@ -47,13 +68,13 @@ public class PaymentServiceImpl implements PaymentService {
                     existingPayment.setQuantity(paymentRequestDto.getQuantity());
                     existingPayment.setCardNumber(paymentRequestDto.getCardNumber());
                     existingPayment.setCurrency(paymentRequestDto.getCurrency());
-                    existingPayment.setCustomer(paymentRequestDto.getCustomer());
+                    existingPayment.setCustomerId(paymentRequestDto.getCustomerId());
                     return paymentRepository.save(existingPayment);
                 })
                 .doOnNext(updatedPayment ->
                         log.info("Successfully updated payment with ID: {} for request ID: {}", updatedPayment.getPaymentId(), requestID)
                 )
-                .map(this::mapToPaymentResponseDto);
+                .map(PaymentMapper::mapToPaymentResponseDto);
     }
 
     @Override
@@ -71,7 +92,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Flux<PaymentResponseDto> getAllPayments(String requestID) {
         log.info("Retrieving all payments for request ID: {}", requestID);
-        return paymentRepository.findAll().map(this::mapToPaymentResponseDto);
+        return paymentRepository.findAll().map(PaymentMapper::mapToPaymentResponseDto);
     }
 
     @Override
@@ -82,30 +103,9 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Searching for payment with ID: {}", paymentId);
         return paymentRepository.findById(Long.valueOf(paymentId))
                 .switchIfEmpty(Mono.error(new PaymentNotFoundException("Payment not found with ID: " + paymentId)))
-                .map(this::mapToPaymentResponseDto)
+                .map(PaymentMapper::mapToPaymentResponseDto)
                 .doOnNext(payment ->
                         log.info("Successfully retrieved payment with ID: {} for request ID: {}", paymentId, requestID)
                 );
-    }
-
-    private Payment mapToPaymentEntity(PaymentRequestDto dto) {
-        return Payment.builder()
-                .product(dto.getProduct())
-                .quantity(dto.getQuantity())
-                .cardNumber(dto.getCardNumber())
-                .currency(dto.getCurrency())
-                .customer(dto.getCustomer())
-                .build();
-    }
-
-    private PaymentResponseDto mapToPaymentResponseDto(Payment payment) {
-        return PaymentResponseDto.builder()
-                .paymentId(payment.getPaymentId())
-                .product(payment.getProduct())
-                .quantity(payment.getQuantity())
-                .cardNumber(payment.getCardNumber())
-                .currency(payment.getCurrency())
-                .customer(payment.getCustomer())
-                .build();
     }
 }

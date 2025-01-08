@@ -2,7 +2,6 @@ package com.afrisol.PaymentService.controller;
 
 import com.afrisol.PaymentService.dto.PaymentRequestDto;
 import com.afrisol.PaymentService.dto.PaymentResponseDto;
-import com.afrisol.PaymentService.service.KafkaProducer;
 import com.afrisol.PaymentService.service.PaymentService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +20,9 @@ import java.util.UUID;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final KafkaProducer kafkaProducer;
 
-    public PaymentController(PaymentService paymentService, KafkaProducer kafkaProducer) {
+    public PaymentController(PaymentService paymentService) {
         this.paymentService = paymentService;
-        this.kafkaProducer = kafkaProducer;
     }
 
     @GetMapping
@@ -40,15 +37,6 @@ public class PaymentController {
         String requestID = UUID.randomUUID().toString();
         log.info("Retrieving payment with ID: {} and request ID: {}", paymentId, requestID);
         return paymentService.getPayment(paymentId, requestID)
-                .map(ResponseEntity::ok);
-    }
-
-    @PostMapping
-    public Mono<ResponseEntity<PaymentResponseDto>> createPayment(@Valid @RequestBody PaymentRequestDto paymentRequestDto) {
-        String requestID = UUID.randomUUID().toString();
-        log.info("Creating payment for request ID: {}", requestID);
-        return paymentService.addPayment(paymentRequestDto, requestID)
-                .doOnNext(paymentResponseDto -> kafkaProducer.sendMessage(paymentResponseDto)) // Publish to Kafka
                 .map(ResponseEntity::ok);
     }
 

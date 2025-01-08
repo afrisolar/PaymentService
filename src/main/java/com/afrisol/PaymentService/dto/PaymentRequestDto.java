@@ -26,6 +26,6 @@ public class PaymentRequestDto {
     @NotBlank(message = "Currency is required")
     private String currency;
 
-    @NotBlank(message = "Customer name is required")
-    private String customer;
+    @NotBlank(message = "Customer Id is required")
+    private Integer customerId;
 }

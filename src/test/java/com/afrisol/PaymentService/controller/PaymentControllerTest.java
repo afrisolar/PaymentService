@@ -48,7 +48,7 @@ class PaymentControllerTest {
                 .totalAmount(BigDecimal.valueOf(200))
                 .cardNumber(123456789L)
                 .currency("USD")
-                .customer("Customer1")
+                .customerId(123)
                 .build();
 
         // Sample PaymentRequestDto
@@ -57,7 +57,7 @@ class PaymentControllerTest {
                 .quantity(2)
                 .cardNumber(123456789L)
                 .currency("USD")
-                .customer("Customer1")
+                .customerId(123)
                 .build();
     }
 
@@ -100,7 +100,7 @@ class PaymentControllerTest {
 
     @Test
     void createPayment() {
-        when(paymentService.addPayment(any(PaymentRequestDto.class), anyString())).thenReturn(Mono.just(samplePaymentResponse));
+        when(paymentService.processPayment(any(PaymentRequestDto.class))).thenReturn(Mono.just(samplePaymentResponse));
 
         webTestClient.post()
                 .uri("/api/v1/payments")
@@ -114,7 +114,7 @@ class PaymentControllerTest {
                     assertEquals("ProductA", payment.getProduct());
                 });
 
-        verify(paymentService, times(1)).addPayment(any(PaymentRequestDto.class), anyString());
+        verify(paymentService, times(1)).processPayment(any(PaymentRequestDto.class));
     }
 
     @Test

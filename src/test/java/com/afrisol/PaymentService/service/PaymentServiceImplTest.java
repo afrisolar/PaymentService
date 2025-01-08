@@ -13,8 +13,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.math.BigDecimal;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -40,7 +38,7 @@ class PaymentServiceImplTest {
                 .quantity(2)
                 .cardNumber(123456L)
                 .currency("USD")
-                .customer("Customer1")
+                .customerId(1024)
                 .build();
 
         sampleRequestDto = PaymentRequestDto.builder()
@@ -48,7 +46,7 @@ class PaymentServiceImplTest {
                 .quantity(2)
                 .cardNumber(123456L)
                 .currency("USD")
-                .customer("Customer1")
+                .customerId(1024)
                 .build();
     }
 
@@ -56,7 +54,7 @@ class PaymentServiceImplTest {
     void addPayment() {
         when(paymentRepository.save(any(Payment.class))).thenReturn(Mono.just(samplePayment));
 
-        Mono<PaymentResponseDto> result = paymentService.addPayment(sampleRequestDto, "req-123");
+        Mono<PaymentResponseDto> result = paymentService.processPayment(sampleRequestDto);
 
         StepVerifier.create(result)
                 .expectNextMatches(response -> response.getProduct().equals("ProductA"))
@@ -114,7 +112,13 @@ class PaymentServiceImplTest {
         Mono<PaymentResponseDto> result = paymentService.getPayment(1, "req-123");
 
         StepVerifier.create(result)
-                .expectNextMatches(response -> response.getCustomer().equals("Customer1"))
+                .expectNextMatches(response ->
+                        response.getPaymentId() == 1L &&
+                                response.getProduct().equals("ProductA") &&
+                                response.getQuantity() == 2 &&
+                                response.getCardNumber() == 123456L &&
+                                response.getCurrency().equals("USD") &&
+                                response.getCustomerId() == 1024)
                 .verifyComplete();
 
         verify(paymentRepository, times(1)).findById(1L);

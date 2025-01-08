@@ -6,7 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface PaymentService {
-    Mono<PaymentResponseDto> addPayment(PaymentRequestDto paymentRequestDto, String requestID);
+    Mono<PaymentResponseDto> processPayment(PaymentRequestDto paymentRequestDto);
     Mono<PaymentResponseDto> updatePayment(PaymentRequestDto paymentRequestDto, Integer paymentId, String requestID);
     Mono<Void> deletePayment(Integer paymentId, String requestID);
     Flux<PaymentResponseDto> getAllPayments(String requestID);
