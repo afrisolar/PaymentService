@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: PaymentService
+  kafka:
+    bootstrap-servers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        retries: ${KAFKA_RETRIES:3}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:order-consumer-group}
+      auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:earliest}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:payment_service_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+topics:
+  order: ${ORDER_TOPIC:order}
+  payment: ${PAYMENT_TOPIC:payment}
+
+springdoc:
+  swagger-ui:
+    path: /api-docs
+
+server:
+  port: ${SERVER_PORT:8083}
+
+logging:
+  level:
+    org.springframework.r2dbc.connection: DEBUG
+    io.r2dbc.postgresql: DEBUG
