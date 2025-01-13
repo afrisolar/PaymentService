@@ -19,7 +19,7 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
 topics:
-  order: ${ORDER_TOPIC:order}
+  order: ${ORDER_TOPIC:order-placed}
   payment: ${PAYMENT_TOPIC:payment}
 
 springdoc:

@@ -9,10 +9,12 @@ public class PaymentMapper {
     public static Payment mapToPaymentEntity(PaymentRequestDto dto) {
         return Payment.builder()
                 .product(dto.getProduct())
+                .orderNumber(dto.getOrderNumber())
                 .quantity(dto.getQuantity())
                 .cardNumber(dto.getCardNumber())
                 .currency(dto.getCurrency())
                 .customerId(dto.getCustomerId())
+                .amount(dto.getAmount())
                 .build();
     }
 
@@ -20,7 +22,9 @@ public class PaymentMapper {
         return PaymentResponseDto.builder()
                 .paymentId(payment.getPaymentId())
                 .product(payment.getProduct())
+                .orderNumber(payment.getOrderNumber())
                 .quantity(payment.getQuantity())
+                .amount(payment.getAmount())
                 .cardNumber(payment.getCardNumber())
                 .currency(payment.getCurrency())
                 .customerId(payment.getCustomerId())

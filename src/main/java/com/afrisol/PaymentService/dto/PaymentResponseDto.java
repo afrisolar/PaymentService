@@ -14,8 +14,9 @@ import java.math.BigDecimal;
 public class PaymentResponseDto {
     private Long paymentId;
     private String product;
+    private String orderNumber;
     private Integer quantity;
-    private BigDecimal totalAmount;
+    private BigDecimal amount;
     private Long cardNumber;
     private String currency;
     private Integer customerId;

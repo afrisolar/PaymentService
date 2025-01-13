@@ -18,10 +18,12 @@ public class Payment {
     @Id
     private Long paymentId;
     private String product; // Product represented as a simple string
+    private String orderNumber;
     private Integer quantity;
     private Long cardNumber; // Card number as a numeric type
     private String currency; // e.g., USD, EUR
     private Integer customerId; // Customer represented as a simple string (e.g., name)
+    private BigDecimal amount;
 
     public void processPayment() {
         BigDecimal totalAmount = BigDecimal.valueOf(quantity * 10L);

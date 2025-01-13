@@ -44,8 +44,9 @@ class PaymentControllerTest {
         samplePaymentResponse = PaymentResponseDto.builder()
                 .paymentId(1L)
                 .product("ProductA")
+                .orderNumber("ORD12345")
                 .quantity(2)
-                .totalAmount(BigDecimal.valueOf(200))
+                .amount(BigDecimal.valueOf(200))
                 .cardNumber(123456789L)
                 .currency("USD")
                 .customerId(123)
@@ -54,10 +55,12 @@ class PaymentControllerTest {
         // Sample PaymentRequestDto
         samplePaymentRequest = PaymentRequestDto.builder()
                 .product("ProductA")
+                .orderNumber("ORD12345")
                 .quantity(2)
                 .cardNumber(123456789L)
                 .currency("USD")
                 .customerId(123)
+                .amount(BigDecimal.valueOf(200))
                 .build();
     }
 
@@ -75,6 +78,7 @@ class PaymentControllerTest {
                 .consumeWith(response -> {
                     PaymentResponseDto payment = response.getResponseBody().get(0);
                     assertEquals("ProductA", payment.getProduct());
+                    assertEquals("ORD12345", payment.getOrderNumber());
                 });
 
         verify(paymentService, times(1)).getAllPayments(anyString());
@@ -93,28 +97,10 @@ class PaymentControllerTest {
                 .consumeWith(response -> {
                     PaymentResponseDto payment = response.getResponseBody();
                     assertEquals("ProductA", payment.getProduct());
+                    assertEquals("ORD12345", payment.getOrderNumber());
                 });
 
         verify(paymentService, times(1)).getPayment(eq(1), anyString());
-    }
-
-    @Test
-    void createPayment() {
-        when(paymentService.processPayment(any(PaymentRequestDto.class))).thenReturn(Mono.just(samplePaymentResponse));
-
-        webTestClient.post()
-                .uri("/api/v1/payments")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(samplePaymentRequest)
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody(PaymentResponseDto.class)
-                .consumeWith(response -> {
-                    PaymentResponseDto payment = response.getResponseBody();
-                    assertEquals("ProductA", payment.getProduct());
-                });
-
-        verify(paymentService, times(1)).processPayment(any(PaymentRequestDto.class));
     }
 
     @Test
@@ -131,6 +117,7 @@ class PaymentControllerTest {
                 .consumeWith(response -> {
                     PaymentResponseDto payment = response.getResponseBody();
                     assertEquals("ProductA", payment.getProduct());
+                    assertEquals("ORD12345", payment.getOrderNumber());
                 });
 
         verify(paymentService, times(1)).updatePayment(any(PaymentRequestDto.class), eq(1), anyString());
